@@ -19,6 +19,7 @@ AR = ar
 RM = rm -f
 STAT = stat
 OBJCOPY = objcopy
+DD = dd
 
 VERBOSE_AS =
 VERBOSE_CC =
@@ -28,13 +29,13 @@ VERBOSE_LINK =
 VERBOSE_RM = 
 VERBOSE_BIN =
 
-QUIET_AS = @echo 'AS   '$(call local_src,$<) &&
-QUIET_CC = @echo 'CC   '$(call local_src,$<) &&
-QUIET_CXX = @echo 'CXX  '$(call local_src,$<) && 
-QUIET_AR = @echo 'AR   '$$(call local_build,$$@) && 
-QUIET_LINK = @echo 'LINK '$$(call local_build,$$@) && 
-QUIET_RM = @echo 'CLEAN' $(patsubst clean-%,%,$@) &&
-QUIET_BIN = @echo 'BIN  '$$(call local_build,$$@) &&
+QUIET_AS = @echo 'AS    '$(call local_src,$<) &&
+QUIET_CC = @echo 'CC    '$(call local_src,$<) &&
+QUIET_CXX = @echo 'CXX   '$(call local_src,$<) && 
+QUIET_AR = @echo 'AR    '$$(call local_build,$$@) && 
+QUIET_LINK = @echo 'LINK  '$$(call local_build,$$@) && 
+QUIET_RM = @echo 'CLEAN ' $(patsubst clean-%,%,$@) &&
+QUIET_BIN = @echo 'BIN   '$$(call local_build,$$@) &&
 
 SILENT_AS = @
 SILENT_CC = @

@@ -6,10 +6,8 @@
 .include "macro.inc"
 .include "define.inc"
 
-.org GDT_IDT
+/*.org KERNEL_LOAD_ADDR*/
 .code16
-
-.section .gdt, "a"
 
 /*
 ;------------------------------------------------+
@@ -17,7 +15,9 @@
 ;------------------------------------------------+
 */
 
+.section .gdt, "a"
 
+    /*.ascii "GDT SECTION"*/
 ENTRY GDT
 
 	null_desc:		.quad	0
@@ -35,6 +35,7 @@ GDT_sz = . - GDT - 1
 
 .section .idt, "aw"
 
+    /*.ascii "IDT SECTION"*/
 ENTRY IDT
 
 	trap_int		=	0b1000111100000000
@@ -72,17 +73,6 @@ ENTRY IDT
 		dwIDT IRQ2_end, cs_seg, default_int
 	.endr
 */
-/*
-	;-------------;
-	; KERNEL INTs ;
-	;-------------;
-*/
-
-/*	dwIDT int_30h, cs_seg, default_int	*/	   /* OUTPUT */
-/*	dwIDT int_31h, cs_seg, default_int	*/	   /* INPUT */
-/*	dwIDT int_32h, cs_seg, default_int	*/	   /* FLOPPY */
-/*	dwIDT int_33h, cs_seg, default_int	*/	   /* MEMORY */
-
 	.fill	8*256 - (. - IDT)
 
 IDT_sz = . - IDT - 1
@@ -93,11 +83,12 @@ IDT_sz = . - IDT - 1
 ;---------------------------------------------------------------------------;
 */
 
-.section .text.head, "ax"
+.section .text.boot, "ax"
 
 
 /* .org OS_HEAD */
-ENTRY	start
+    /*.ascii "TEXT.BOOT SECTION"*/
+ENTRY	boot_entry16
 
 /*
 	;--------------------------------------------------------;
@@ -304,6 +295,7 @@ ignore_interrupt:			/* dummy handler */
 
 .section .initdata, "a"
 
+    /*.ascii "DATA.BOOT SECTION"*/
 	GDTR:   .word	GDT_sz
 			.long	GDT
 
@@ -316,16 +308,10 @@ ignore_interrupt:			/* dummy handler */
 	/*------------------------------------------*/
 
 
-/*.section .buffer, "a"
-		.org	MAIN_COMMANDS*/
-
-/*	.include "main.S" */
-
-
 
 
 /*
-									    E N D   O F   H E A D
+	    E N D   O F   H E A D
 */
 
 

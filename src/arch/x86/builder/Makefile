@@ -16,11 +16,11 @@ $(call local_target,image)_TDEPS += kernel_preimage
 $(call local_target,image)_LDSCRIPT = $(_MODULE_PATH)/kernel.ld
 $(call add_executable,image,)
 
-QUIET_SIZE = @echo 'SIZE '$(call local_build,$^) &&
+QUIET_SIZE = @echo 'SIZE  '$(call local_build,$^) &&
 SILENT_SIZE = @
 
 $(call local_target,size)_OUTPUT := size.inc
-$(call add_custom,size,$($(call local_target,image)_PATH))
+$(call add_custom,size,)
 
 ifneq ($($(_MODULE_NAME)_DEFINED),T)
 $($(call local_target,size)_PATH) : $($(call local_target,image)_PATH) 

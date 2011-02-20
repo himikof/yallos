@@ -1,22 +1,17 @@
 OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
 OUTPUT_ARCH(i386)
-ENTRY(start)
+ENTRY(boot_entry16)
+
 SECTIONS
 {
 	. = 0x2000;
-    .gdt : 
-    {
-		*(.gdt)
-	}
-    .idt : 
-    {
-		*(.idt)
-	}
+    .gdt : { *(.gdt) }
+    .idt : { *(.idt) }
 	. = 0x3000;
-    .text.head : 
+    .text.boot : 
     {
 		_system_text = .;
-		*(.text.head)
+		*(.text.boot)
 	}
     .initdata : 
     {

@@ -1,4 +1,5 @@
 /*
+;-----------------------------------+
 ; Yallos yaldr - test loader        |
 ;-----------------------------------+
 */
@@ -25,7 +26,7 @@ ENTRY	ldr_start
 	bpbOEM:			.ascii	"Yallos  "
 	bpbSectSize:	.word	512
 	bpbClustSize:	.byte	1
-	bpbReservedSec:	.word	1
+	bpbReservedSec:	.word	1 + (KERN_SIZE >> 9 + 1)
 	bpbFats:		.byte	2
 	bpbRootSize:	.word	256
 	bpbTotalSect:	.word	2880
@@ -51,9 +52,9 @@ ENTRY	ldr_start
 .section .text
 
 /*
-	;--------------------------------------------------------;
-	;                       I n i t                          ;
-	;--------------------------------------------------------;
+	;------------------;
+	;  Initialization  ;
+	;------------------;
 */
 boot:
 	mov ax, 0x07c0
@@ -63,6 +64,7 @@ boot:
 	mov ss, ax
 	mov sp, 0x200
 
+/* Move bootloader out of the way */
 	mov cx, 256
 	xor di, di
 	xor si, si
@@ -71,9 +73,9 @@ boot:
 	jmp 0xb0:offset copied
 
 /*
-	;--------------------------------------------------------;
-	;               D i s p l a y   M o d e                  ;
-	;--------------------------------------------------------;
+	;----------------;
+	;  Display mode  ;
+	;----------------;
 */
 copied:
 	mov ax, es
@@ -94,27 +96,27 @@ copied:
 	mov bl, 01
 	int 0x10
 /*
-	;--------------------------------------------------------;
-	;         L o a d               H e a d                  ;
-	;--------------------------------------------------------;
+    ;------------------+
+    ;  Loading kernel  |
+    ;------------------+
 */
 
 .ifgt (KERN_SIZE >> 9 - 2048)
-.error "Kernel too big!"
+.error "Kernel is too big!"
 .endif
-	mov ax, (GDT_IDT & 0xf0000 ) shr 4
+	mov ax, (KERNEL_LOAD_ADDR & 0xf0000 ) shr 4
 	mov es, ax
-	mov bx, GDT_IDT & 0xffff
+	mov bx, KERNEL_LOAD_ADDR & 0xffff
 
 
-	mov dx, 0x0100		/*	start read from track=0, head=1, sector=18 */
-	mov cx, 0x0012
+	mov dx, 0x0000		/*	start reading from track=0, head=0, sector=2 */
+	mov cx, 0x0002
 	call read_kernel
 
 /*
-	;-------------------------------------------+
-	;       Press   any     key                 |
-	;-------------------------------------------+
+	;-------------------------+
+	;  Press any key message  |
+	;-------------------------+
 */
 	mov ax, cs
 	mov es, ax
@@ -137,21 +139,27 @@ copied:
 	int 0x10
 
 /*
-	;-------------------------------------------+
-	;       G o     t o     H  E  A  D          |
-	;-------------------------------------------+
+	;--------------------------------------+
+	;  Transferring control to the kernel  |
+	;--------------------------------------+
 */
 	xor ax, ax
 	mov ds, ax
 	mov es, ax
-	jmp 0:OS_HEAD
+	jmp 0:BOOT_ENTRY16
 
 /*
-	+------------------------------------+
-	|		R e a d   k e r n e l		 |
-	+------------------------------------+
+	+----------------------+
+	|  SUBROUTINES FOLLOW  |
+	+----------------------+
+*/
 
-	KERN_SIZE - length of kernel.bin
+/*
+	+-------------------+
+	|  Read the kernel  |
+	+-------------------+
+
+	KERN_SIZE - length of the kernel image
 
 	es:bx - pointer to the buffer
 */
@@ -162,10 +170,10 @@ copied:
 
 		mov dl, 0
 		mov di, 0
-		mov ax, 0x0201				/*	read 1 sector after the FAT */
-		call read_track+3			/*	we jump to the second command because function reads 18 sectors but we want only 1 */
+		mov ax, 0x0211				/*	read 17 sectors after the MBR */
+		call read_track+3			/*	we jump to the second command because function reads 18 sectors */
 
-	/* S e t     v a r i a b l e     t o    r e a d    n e x t   t r a c k */
+	/* Set variable to read next track */
 	.read:
 		mov cl, 1					/*	sector = 1 */
 		btc dx, 8					/*	head invert (1->0, 0->1) */
@@ -174,39 +182,39 @@ copied:
 		call read_track				/*	read 18 sectors */
 		jnc .check_end
 
-	/* bx - o v e r f l o w */
+	/* bx - overflow */
 		mov ax, es
 		add ah, 0x10
 		mov es, ax
 
-	/* C h e c k   f o r   f i n i s h   l o a d i n g */
+	/* Check for completed loading */
 	.check_end:
 		mov ax, es
-		mov si, ((KERN_SIZE+GDT_IDT) & 0xf0000) >> 4
+		mov si, ((KERN_SIZE+KERNEL_LOAD_ADDR) & 0xf0000) >> 4
 		push dx
-		mov dx, (KERN_SIZE+GDT_IDT) & 0xffff
+		mov dx, (KERN_SIZE+KERNEL_LOAD_ADDR) & 0xffff
 
 		sub dx, bx
 		sbb si, ax
 		pop dx
-		jnb .read
+		ja .read
 
 		pop di
 		pop si
 		ret
 
 /*
-	+------------------------------------+
-	|		R e a d   t r a c k  		 |
-	+------------------------------------+
+	+-----------------------+
+	|  Read a floppy track  |
+	+-----------------------+
 */
 	read_track:
-		mov ax, 0x0212			/*	read 18 sectors */
+		mov ax, 0x0212       /* read 18 sectors */
 		/*OUTPUT ax 0
 		OUTPUT bx 0*/
         int 0x13
 		jc .err
-		OUTPUT ax 0
+		/*OUTPUT ax 0*/
 
 
 		mov ah, 0
@@ -232,14 +240,14 @@ copied:
 		jmp read_track
 
 
+/*
+	+-----------------------+
+	|  LOADER DATA FOLLOWS  |
+	+-----------------------+
+*/
 
 .section .rodata, "a"
 
-/*
-;--------------------------------------------------------;
-;                       D a t a                          ;
-;--------------------------------------------------------;
-*/
 str_error:		.ascii	"Error"
 str_error_sz	= . - str_error
 str_press:		.ascii	"Press any key."
@@ -247,9 +255,15 @@ str_press_sz	= . - str_press
 str_kernel:		.ascii  "Running Yallos kernel..."
 str_kernel_sz	= . - str_kernel
 
-/*.space _start + 512 - 2 - .*/
+
+/*
+	+-----------------+
+	|  MBR SIGNATURE  |
+	+-----------------+
+*/
+
 .section .rodata.tail, "a"
 .word 0x0000
 .word 0xAA55
 
-/*.fill	512*(18+16), 1, 0*/
+

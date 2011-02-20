@@ -1,17 +1,12 @@
 OUTPUT_FORMAT("elf64-x86-64")
 OUTPUT_ARCH(i386:x86-64)
-ENTRY(start)
+ENTRY(boot_entry16)
+
 SECTIONS
 {
 	. = 0x2000;
-    .gdt : 
-    {
-		*(.gdt)
-	}
-    .idt : 
-    {
-		*(.idt)
-	}
+    .gdt : { *(.gdt) }
+    .idt : { *(.idt) }
 	. = 0x3000;
     .text.head : 
     {

@@ -97,7 +97,7 @@ IDT_sz = . - IDT - 1
 
 
 /* .org OS_HEAD */
-ENTRY	start
+ENTRY	boot_entry16
 
 /*
 	;--------------------------------------------------------;
