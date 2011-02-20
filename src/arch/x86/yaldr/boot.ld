@@ -1,6 +1,6 @@
-OUTPUT_FORMAT("pe-i386", "pe-i386", "pe-i386")
+OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
 OUTPUT_ARCH(i386)
-ENTRY(_start)
+ENTRY(ldr_start)
 MEMORY
 {
 	bootloader : ORIGIN = 0x0000, LENGTH = 0x200
@@ -8,20 +8,20 @@ MEMORY
 }
 SECTIONS
 {
-    .rodata : 
+    .rodata.head : 
     {
-		*(.rodata)
+		*(.rodata.head)
 	} >bootloader AT>image
     .text : 
     {
 		*(.text)
 	} >bootloader AT>image
-    .data : 
+    .rodata : 
     {
-		*(.data)
+		*(.rodata)
 	} >bootloader AT>image
-	.data.tail ALIGN(0x0000+0x200-4) :
+	.rodata.tail ALIGN(0x0000+0x200-4) :
 	{
-		*(.data.tail)
+		*(.rodata.tail)
 	} >bootloader AT>image
 }

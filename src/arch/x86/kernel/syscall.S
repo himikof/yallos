@@ -15,7 +15,7 @@
 */
 /*--------------------------------------------------------------------*/
 
-ENTRY	_syscall_handler
+ENTRY	syscall_handler
 		
 		
 		cmp eax, __syscall_table_sz
@@ -46,5 +46,6 @@ ENTRY	_syscall_handler
 	"Empty" system call (just a stub)
 */
 
+.align 4
 ENTRY sys_stub
 		ret

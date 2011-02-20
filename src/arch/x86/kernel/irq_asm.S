@@ -6,7 +6,7 @@
 .include "macro.inc"
 .include "define.inc"	
 	
-	_irq_master_end:		/* exit IRQ interruption */
+	irq_master_end:		/* exit IRQ interruption */
 		push eax
 		mov al, 0x20
 		out 0x20, al
@@ -14,7 +14,7 @@
 		pop eax
 		iret
 
-	_irq_slave_end:			/* exit IRQ interruption */
+	irq_slave_end:			/* exit IRQ interruption */
 		push eax
 		mov al, 0x20
 		out 0xA0, al
@@ -23,12 +23,12 @@
 		iret
 
 .macro def_irq_stub num controller
-	ENTRY _irq\num
+	ENTRY irq\num
 	
 	.if \controller
-		jmp _irq_master_end
+		jmp irq_master_end
 	.else
-		jmp _irq_slave_end
+		jmp irq_slave_end
 	.endif
 .endm
 

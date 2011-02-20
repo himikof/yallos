@@ -19,7 +19,7 @@ exception_handler:
 		iret
 
 .macro def_exception number, handler, push
-ENTRY	_exception_\number
+ENTRY	exception_\number
 	.ifeq  \push
 		push 0
 	.endif

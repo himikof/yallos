@@ -10,9 +10,9 @@
 .code16
 /*.org 0x7c00*/
 
-.section .rodata, "a"		/* Yeah, this may be not the best solution, but I cannot create 3 bytes-long section */
+.section .rodata.head, "a"		/* Yeah, this may be not the best solution, but I cannot create 3 bytes-long section */
 
-ENTRY	_start
+ENTRY	ldr_start
 	jmp .+BPB_sz /* boot */
 	nop
 
@@ -233,7 +233,7 @@ copied:
 
 
 
-.section .data, "a"
+.section .rodata, "a"
 
 /*
 ;--------------------------------------------------------;
@@ -248,7 +248,7 @@ str_kernel:		.ascii  "Running KupOS kernel..."
 str_kernel_sz	= . - str_kernel
 
 /*.space _start + 512 - 2 - .*/
-.section .data.tail, "a"
+.section .rodata.tail, "a"
 .word 0x0000
 .word 0xAA55
 

@@ -3,8 +3,8 @@
 ;-----------------------------------+
 */
 .intel_syntax noprefix
-.include "asm/macro.inc"
-.include "asm/define.inc"
+.include "macro.inc"
+.include "define.inc"
 
 .org GDT_IDT
 .code16
@@ -18,7 +18,7 @@
 */
 
 
-ENTRY _GDT
+ENTRY GDT
 
 	null_desc:		.quad	0
 
@@ -27,15 +27,15 @@ ENTRY _GDT
 	video_descr:	.byte	0xFF, 0xFF, 0x00, 0x80, 0x0b, 0b10010010, 0b11001111 , 0x00
 	stack_descr:	.byte	0xFF, 0xFF, 0xf0, 0xff, 0x3e, 0b10010010, 0b01001111 , 0x00
 
-	.fill	8*256 - (. - _GDT)
+	.fill	8*256 - (. - GDT)
 
-GDT_sz = . - _GDT - 1
+GDT_sz = . - GDT - 1
 
 /*;--------------------------------134 */
 
 .section .idt, "aw"
 
-ENTRY _IDT
+ENTRY IDT
 
 	trap_int		=	0b1000111100000000
 	default_int		=	0b1000111000000000
@@ -83,9 +83,9 @@ ENTRY _IDT
 /*	dwIDT int_32h, cs_seg, default_int	*/	   /* FLOPPY */
 /*	dwIDT int_33h, cs_seg, default_int	*/	   /* MEMORY */
 
-	.fill	8*256 - (. - _IDT)
+	.fill	8*256 - (. - IDT)
 
-IDT_sz = . - _IDT - 1
+IDT_sz = . - IDT - 1
 
 /*
 ;---------------------------------------------------------------------------;
@@ -173,7 +173,7 @@ prot_mode:
 	mov eax, 0b11000
 	mov gs, ax
 
-	lss esp, [_SYS_STACK]
+	lss esp, [SYS_STACK]
 
 /*
 	;-------------------------------------------+
@@ -182,12 +182,12 @@ prot_mode:
 */
 
 /*
-	.comm _end, 4
-	.comm _system_text, 4
+	.comm end, 4
+	.comm system_text, 4
 
 	mov esi, _main_com_
-	mov edi, _system_text						/*  memory 0x03000 - 0x13000 (64kb)  = memory for floppy DMA *//*
-	mov ecx, (_end - _system_text) / 4
+	mov edi, system_text						/*  memory 0x03000 - 0x13000 (64kb)  = memory for floppy DMA *//*
+	mov ecx, (end - system_text) / 4
 	rep movsd									/* main is 0x13000 and we copy it there *//*
 */
 
@@ -273,12 +273,12 @@ prot_mode:
 	out dx, ax
 	jmp .+2
 
-	.comm _kernel_main, 4
-	jmp _kernel_main		/* should never return */
+	.comm kernel_main, 4
+	jmp kernel_main		/* should never return */
 
 fill_idt:
 	mov ecx, 0x100
-	mov ebx, offset _IDT
+	mov ebx, offset IDT
 	mov edx, offset ignore_interrupt
 
 	mov eax, 0x00080000
@@ -304,13 +304,13 @@ ignore_interrupt:			/* dummy handler */
 
 .section .initdata, "a"
 
-	GDTR:		.word	GDT_sz
-			.long	_GDT
+	GDTR:   .word	GDT_sz
+			.long	GDT
 
-	IDTR:		.word	IDT_sz
-			.long	_IDT
+	IDTR:   .word	IDT_sz
+			.long	IDT
 
-	_SYS_STACK:	.long	SYS_STACK_ESP
+	SYS_STACK:	.long	SYS_STACK_ESP
 			.word	0b100000
 
 	/*------------------------------------------*/
@@ -330,72 +330,3 @@ ignore_interrupt:			/* dummy handler */
 
 
 
-/*		OLD   STRUCTURES      */
-
-/*
-	;-------------------------------------------------------------------------------------------------------------------+
-	;        IRQ - Timer, Key etc                                                                                       |
-	;-------------------------------------------------------------------------------------------------------------------+
-*/
-/*	IRQ1_end:		/* exit IRQ interruption *//*
-		push eax
-		mov al, 0x20
-		out 0x20, al
-		jmp .+2
-		pop eax
-		iret
-
-	IRQ2_end:		/* exit IRQ interruption *//*
-		push eax
-		mov al, 0x20
-		out 0xA0, al
-		jmp .+2
-		pop eax
-		iret
-*/
-
-/*
-	;------------------+
-	; IRQ0 - Timer     |
-	;------------------+
-*/
-	/*.include "IRQ0.S"*/
-/*
-	;------------------+
-	; IRQ1 - Keyboard  |
-	;------------------+
-*/
-	/*.include "IRQ1.S"*/
-/*
-	;---------------+
-	; IRQ6 - Floppy |
-	;---------------+
-*/
-	/*.include "IRQ6.S"*/
-/*
-	;-------------------------------------------------------------------------------------------------------------------+
-	;        INT 30h - OUTPUT TO CONSOLE                                                                                |
-	;-------------------------------------------------------------------------------------------------------------------+
-*/
-	/*.include "OUTPUT.S"*/
-/*
-	;-------------------------------------------------------------------------------------------------------------------+
-	;        INT 31h - INPUT TO CONSOLE                                                                                 |
-	;-------------------------------------------------------------------------------------------------------------------+
-*/
-	/*.include "INPUT.S"*/
-/*
-	;-------------------------------------------------------------------------------------------------------------------+
-	;        INT 32h - F L O P P Y                                                                                      |
-	;-------------------------------------------------------------------------------------------------------------------+
-*/
-	/*.include "FLOPPY.S"*/
-/*
-	;-------------------------------------------------------------------------------------------------------------------+
-	;        INT 33h - MEMORY                                                                                           |
-	;-------------------------------------------------------------------------------------------------------------------+
-*/
-	/*.include "MEMORY.S"*/
-
-
-/*	.long 0	*/			 /* align for copy by dword */

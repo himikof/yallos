@@ -11,8 +11,8 @@
 .include "syscalls_plain.inc"
 
 /*--------------------------------------------------------------------*/
-
-	int_30h:		  /* al - number function output */
+/*
+	int_30h:		 */ /* al - number function output */ /*
 		push es
 		push gs
 		pop es
@@ -23,26 +23,27 @@
 		movsx eax, al
 
 		call dword ptr [eax*4 + int_30h_func]
-		call _syn_cursor
+		call _output_syn_cursor
 
 	1:
 		pop es
 		iret
-
+*/
 /*--------------------------------------------------------------------*/
 
-
+/*
 	int_30h_func:
 		.long	_puts
-		.long	_putchar
-		.long	_clear_screen
-		.long	_scroll_down
-		.long	_putenter
-		.long	_putnumber
-
+		.long	_output_putchar
+		.long	_output_clear_screen
+		.long	_output_scroll_down
+		.long	_output_putenter
+		.long	_output_putnumber
+*/
 
 
 	cursor:		.word	0 /* offset from 0b8000h */
+    videomem = 0xb8000
 
 /*
 	;-------------------------------------------------------------------------------------------------------------------+
@@ -52,7 +53,7 @@
 	;-------------------------------------------------------------------------------------------------------------------+
 */
 
-ENTRY	_puts			/* int puts ( char* str ) - Text out */
+ENTRY	output_puts			/* int output_puts ( char* str ) - Text out */
 		push ebp
 		mov ebp, esp
 
@@ -64,7 +65,7 @@ ENTRY	_puts			/* int puts ( char* str ) - Text out */
 		jz .FIN
 
 		push eax
-		call _putchar
+		call output_putchar
 		add esp, 4
 
 		jmp .puts
@@ -82,7 +83,7 @@ ENTRY	_puts			/* int puts ( char* str ) - Text out */
 	;-------------------------------------------------------------------------------------------------------------------+
 */
 
-ENTRY	_putchar		   /*int putchar ( char ch ) - Text out */
+ENTRY	output_putchar		   /*int output_putchar ( char ch ) - Text out */
 		push ebp
 		mov ebp, esp
 		push es
@@ -105,8 +106,9 @@ ENTRY	_putchar		   /*int putchar ( char ch ) - Text out */
 
         /* if no then print char */
 
-        movsx eax, word ptr [cursor]
-        mov [es:eax*2], bx
+        movzx eax, word ptr [cursor]
+        lea eax, [videomem + 2*eax]
+        mov [eax], bx
         inc word ptr [cursor]
         jmp .OK
 
@@ -121,9 +123,10 @@ ENTRY	_putchar		   /*int putchar ( char ch ) - Text out */
 
 .backspace:
         dec word ptr [cursor]
-        movsx eax, word ptr [cursor]
+        movzx eax, word ptr [cursor]
+        lea eax, [videomem + 2*eax]
         mov bl, 0x20
-        mov [es:eax*2], bl
+        mov [eax], bl
 
         /* end printing */
 
@@ -133,11 +136,11 @@ ENTRY	_putchar		   /*int putchar ( char ch ) - Text out */
 
         push 0x20
         push 0x01
-        call _scroll_down
+        call output_scroll_down
         add esp, 8
 
      1:
-		call _syn_cursor
+		call output_syn_cursor
         xor eax, eax
 		pop es
         pop ebp
@@ -151,11 +154,11 @@ ENTRY	_putchar		   /*int putchar ( char ch ) - Text out */
 	;-------------------------------------------------------------------------------------------------------------------+
 */
 
-ENTRY	_putenter	/* void putenter(void)	*/
+ENTRY	output_putenter	/* void output_putenter(void)	*/
 
         
         push 10
-        call _putchar
+        call output_putchar
         add esp, 4
 
 		ret
@@ -168,7 +171,7 @@ ENTRY	_putenter	/* void putenter(void)	*/
 	;-------------------------------------------------------------------------------------------------------------------+
 */
 
-ENTRY	_putnumber		/* int putnumber(int num) */
+ENTRY	output_putnumber		/* int output_putnumber(int num) */
 		push ebp
 		mov ebp, esp
 		push ebx
@@ -193,12 +196,12 @@ ENTRY	_putnumber		/* int putnumber(int num) */
 	  .put:
 		and ebx, 0xFF
 		push ebx
-		call _putchar
+		call output_putchar
 		add esp, 4
 		
 		loop .l1
 
-		call _putenter
+		call output_putenter
 
 		xor eax, eax
 		pop edx
@@ -215,7 +218,7 @@ ENTRY	_putnumber		/* int putnumber(int num) */
 	;-------------------------------------------------------------------------------------------------------------------+
 */
 
-ENTRY	_scroll_down			/*  int scroll_down(int start_line, char fill) */
+ENTRY	output_scroll_down			/*  int output_scroll_down(int start_line, char fill) */
 		push ebp
 		mov ebp, esp
 		push es
@@ -263,7 +266,7 @@ ENTRY	_scroll_down			/*  int scroll_down(int start_line, char fill) */
 		pop edi
         pop es
 		pop ebp
-		call _syn_cursor
+		call output_syn_cursor
 		xor eax, eax
 		ret
 
@@ -275,7 +278,7 @@ ENTRY	_scroll_down			/*  int scroll_down(int start_line, char fill) */
 	;-------------------------------------------------------------------------------------------------------------------+
 */
 
-ENTRY	_syn_cursor			/*	void syn_cursor(void)  */
+ENTRY	output_syn_cursor			/*	void output_syn_cursor(void)  */
 		push ebx
 		push edx
 
@@ -313,7 +316,7 @@ ENTRY	_syn_cursor			/*	void syn_cursor(void)  */
 	;-------------------------------------------------------------------------------------------------------------------+
 */
 
-ENTRY	_clear_screen			/* void clear_screen(void) */
+ENTRY	output_clear_screen			/* void output_clear_screen(void) */
 		push ecx
 		push edi
 		push es
@@ -332,5 +335,5 @@ ENTRY	_clear_screen			/* void clear_screen(void) */
         pop es
 		pop edi
 		pop ecx
-		call _syn_cursor
+		call output_syn_cursor
 		ret

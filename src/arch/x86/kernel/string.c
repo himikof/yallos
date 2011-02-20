@@ -2,10 +2,10 @@
 	KupOS string and memory manipulation routines
 */
 
-#include <string.h>
+#include <kupos/string.h>
 
 /* Copy SRC to DEST.  */
-char *strcpy (char *__restrict __dest, __const char *__restrict __src)
+char* kstrcpy (char *__restrict __dest, __const char *__restrict __src)
 {
 	asm (	"	.intel_syntax noprefix \n"
 			"	push ax \n"
@@ -23,7 +23,7 @@ char *strcpy (char *__restrict __dest, __const char *__restrict __src)
 }
 
 /* Return the length of S.  */
-size_t strlen (__const char *__s)
+size_t kstrlen (__const char *__s)
 {
 	long length;
 	asm (	"	.intel_syntax noprefix \n"
@@ -40,7 +40,7 @@ size_t strlen (__const char *__s)
 }
 
 /* Return the length of S, max n.  */
-size_t strnlen(const char * __s, size_t n)
+size_t kstrnlen(const char * __s, size_t n)
 {
 	long length;
 	asm (	"	.intel_syntax noprefix \n"

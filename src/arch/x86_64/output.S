@@ -10,8 +10,8 @@
 .include "macro.inc"
 .include "syscalls_plain.inc"
 
-	cursor:		.word	0 /* offset from 0b8000h */
-	videomem = 0xb8000
+        cursor:		.word	0 /* offset from 0b8000h */
+        videomem = 0xb8000
 
 /**
  * Print str at current cursor position, updating it.
@@ -62,8 +62,7 @@ ENTRY	output_putchar		   /*int output_putchar ( char ch ) - Text out */
         /* if no then print char */
 
         movsx rax, word ptr [cursor]
-	shl rax, 1
-	add rax, videomem
+        lea rax, [videomem + 2*rax]
         mov [rax], bx
         inc word ptr [cursor]
         jmp .OK
@@ -81,8 +80,7 @@ ENTRY	output_putchar		   /*int output_putchar ( char ch ) - Text out */
         dec word ptr [cursor]
         movsx rax, word ptr [cursor]
         mov bl, 0x20
-	shl rax, 1
-	add rax, videomem
+        lea rax, [videomem + 2*rax]
         mov [rax], bl
 
         /* end printing */
