@@ -1,5 +1,5 @@
 /*
-; KupOS  start - 3/01/2008          |
+; Yallos yaldr - test loader        |
 ;-----------------------------------+
 */
 .intel_syntax noprefix
@@ -22,7 +22,7 @@ ENTRY	ldr_start
 	;  Standard BIOS Parameter Block, "BPB".   ;
 	;------------------------------------------;
 */
-	bpbOEM:			.ascii	"KupOS   "
+	bpbOEM:			.ascii	"Yallos  "
 	bpbSectSize:	.word	512
 	bpbClustSize:	.byte	1
 	bpbReservedSec:	.word	1
@@ -44,7 +44,7 @@ ENTRY	ldr_start
 	bpbReserved:	.byte	0
 	bpbSignature:	.byte	41			    /*; 0 = nothing more. 41 = three more (below)..*/
 	bpbID:			.long	1
-	bpbVolumeLabel:	.ascii	"BOOT KupOS "
+	bpbVolumeLabel:	.ascii	"Yallos BOOT"
 	bpbFileSystem:	.ascii	"FAT12   "
 
 .align 4
@@ -244,7 +244,7 @@ str_error:		.ascii	"Error"
 str_error_sz	= . - str_error
 str_press:		.ascii	"Press any key."
 str_press_sz	= . - str_press
-str_kernel:		.ascii  "Running KupOS kernel..."
+str_kernel:		.ascii  "Running Yallos kernel..."
 str_kernel_sz	= . - str_kernel
 
 /*.space _start + 512 - 2 - .*/
