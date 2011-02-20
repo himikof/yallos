@@ -366,6 +366,8 @@ static char* put_dec_full(char *buf, unsigned q)
  *
  * This ends up being the most efficient "calling
  * convention" on x86.
+ *
+ * It is used only on x86.
  */
 #define do_div(n,base) ({ \
         unsigned long __upper, __low, __high, __mod, __base; \
@@ -388,7 +390,12 @@ static __attribute__ ((noinline))  char* put_dec(char *buf, unsigned long long n
                 unsigned rem;
                 if (num < 100000)
                         return put_dec_trunc(buf, num);
+#if ARCH_x86
                 rem = do_div(num, 100000);
+#else
+                rem = num % 100000;
+                num /= 100000;
+#endif
                 buf = put_dec_full(buf, rem);
         }
 }

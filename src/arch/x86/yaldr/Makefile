@@ -18,6 +18,7 @@ $(call local_target,preyaldr)_LDSCRIPT = $(_MODULE_PATH)/boot.ld
 $(call local_target,preyaldr)_EXTRA_TDEPS := $(SIZE_TARGET)
 $(call add_executable,preyaldr,$(YALDR_SRC))
 $($(call local_target,preyaldr)_PATH) : INCLUDE_DIRS_ASM += $(dir $(call get_tpath,$(SIZE_TARGET)))
+$($(call local_target,preyaldr)_PATH) : ALL_ASFLAGS += --32
 
 $(call local_target,yaldr)_TDEPS := $(call local_target,preyaldr)
 $(call add_binary,yaldr,)
