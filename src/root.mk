@@ -68,6 +68,8 @@ ALL_CFLAGS = $(CFLAGS)
 ALL_ASFLAGS = $(ASFLAGS)
 ALL_LDFLAGS = $(LDFLAGS)
 
+ALL_CFLAGS += -fno-stack-protector
+
 INCLUDE_DIRS_C := $(_ROOT)/include
 INCLUDE_DIRS_ASM := $(_ROOT)/include/asm-$(ARCH)
 
