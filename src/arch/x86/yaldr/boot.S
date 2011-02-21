@@ -11,45 +11,14 @@
 .code16
 /*.org 0x7c00*/
 
-.section .rodata.head, "a"		/* Yeah, this may be not the best solution, but I cannot create 3 bytes-long section */
-
-ENTRY	ldr_start
-	jmp .+BPB_sz /* boot */
-	nop
-
-	BPB_sz = 0x40
-/*
-	;------------------------------------------;
-	;  Standard BIOS Parameter Block, "BPB".   ;
-	;------------------------------------------;
-*/
-	bpbOEM:			.ascii	"Yallos  "
-	bpbSectSize:	.word	512
-	bpbClustSize:	.byte	1
-	bpbReservedSec:	.word	1 + (KERN_SIZE >> 9 + 1)
-	bpbFats:		.byte	2
-	bpbRootSize:	.word	256
-	bpbTotalSect:	.word	2880
-	bpbMedia:		.byte	240
-	bpbFatSize:		.word	9
-	bpbTrackSect:	.word	18
-	bpbHeads:		.word	2
-	bpbHiddenSect:	.long	0
-	bpbLargeSect:	.long	0
-/*
-	;---------------------------------;
-	;  extended BPB for FAT12/FAT16   ;
-	;---------------------------------;
-*/
-	bpbDriveNo:		.byte	0
-	bpbReserved:	.byte	0
-	bpbSignature:	.byte	41			    /*; 0 = nothing more. 41 = three more (below)..*/
-	bpbID:			.long	1
-	bpbVolumeLabel:	.ascii	"Yallos BOOT"
-	bpbFileSystem:	.ascii	"FAT12   "
+/*.section .rodata.head, "a"*/ /* Yeah, this may be not the best solution, but I cannot create 3 bytes-long section */
 
 .align 4
 .section .text
+
+base:
+ENTRY	ldr_start
+	jmp 0:boot /* boot */
 
 /*
 	;------------------;
@@ -70,7 +39,7 @@ boot:
 	xor si, si
 	rep movsw
 
-	jmp 0xb0:offset copied
+	jmp 0xb0:copied - base
 
 /*
 	;----------------;
@@ -81,17 +50,21 @@ copied:
 	mov ax, es
 	mov ds, ax
 
-	mov al, 0x03
+    /* Text mode */
+	mov ax, 0x0003
 	int 0x10
 
+    /* Set palette: ??? */
 	mov ax, 0x1000
 	mov bx, 0x1207
 	int 0x10
 
+    /* Set border color */
 	mov ax, 0x1001
 	mov bh, 0x12
 	int 0x10
 
+    /* Enable blinking */
 	mov ax, 0x1003
 	mov bl, 01
 	int 0x10
@@ -123,9 +96,9 @@ copied:
 
 	mov ax, 0x1300
 	mov bx, 0x0007
-	mov cx, offset str_press_sz
+	mov cx, 14
 	mov dx, 0x0100
-	mov bp, offset str_press
+	mov bp, str_press - base
 	int 0x10
 
 	xor ax, ax
@@ -133,9 +106,9 @@ copied:
 
 	mov ax, 0x1300
 	mov bx, 0x0007
-	mov cx, offset str_kernel_sz
+	mov cx, 24
 	mov dx, 0x0100
-	mov bp, offset str_kernel
+	mov bp, str_kernel - base
 	int 0x10
 
 /*
@@ -146,7 +119,10 @@ copied:
 	xor ax, ax
 	mov ds, ax
 	mov es, ax
-	jmp 0:BOOT_ENTRY16
+    /*mov bx, 0x4000
+    mov ax, [bx]
+    OUTPUT ax 0*/
+	jmp 0:0x4000/*BOOT_ENTRY16*/
 
 /*
 	+----------------------+
@@ -249,11 +225,11 @@ copied:
 .section .rodata, "a"
 
 str_error:		.ascii	"Error"
-str_error_sz	= . - str_error
+str_error_sz	= 5 /*. - str_error*/
 str_press:		.ascii	"Press any key."
-str_press_sz	= . - str_press
+str_press_sz	= 14/*. - str_press*/
 str_kernel:		.ascii  "Running Yallos kernel..."
-str_kernel_sz	= . - str_kernel
+str_kernel_sz	= 24/*. - str_kernel*/
 
 
 /*

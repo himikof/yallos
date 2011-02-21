@@ -147,6 +147,12 @@ ENTRY	boot_entry16
 	lgdt [GDTR]
 	lidt [IDTR]
 
+/* TEMP */
+    mov ax, 0xdead
+    OUTPUT ax 0
+    jmp .
+/* END TEMP */
+
 	mov eax, cr0
 	or  al, 1
 	mov cr0, eax

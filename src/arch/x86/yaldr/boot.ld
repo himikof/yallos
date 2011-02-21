@@ -10,7 +10,7 @@ MEMORY
 SECTIONS
 {
     .text : {
-        *(.rodata.head)
+        /* *(.rodata.head) */
         *(.text)
         *(.rodata)
         . =  0x200 - 4;
